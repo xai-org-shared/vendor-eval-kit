@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vendor-eval"
+version = "0.1.0"
+description = "Collect and export Harbor coding eval results as CSVs"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0",
+]
+
+[project.scripts]
+vendor-eval = "vendor_eval.cli:cli"
