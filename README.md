@@ -1,6 +1,6 @@
-# Coding Vendor Eval Kit
+# Eval kit for vendors selling RL environments to xAI
 
-Thank you for participating in the coding evaluation. This guide walks you through everything you need to run the evaluation and submit your results. Please follow each step carefully — submissions that do not follow this format cannot be processed.
+This guide is meant for vendors interested in selling RL environments to xAI. It walks you through everything you need to run the evaluation and submit your results. Please follow each step carefully — submissions that do not follow this format cannot be processed.
 
 ---
 
@@ -14,7 +14,7 @@ The three models to evaluate are:
 |-------|---------------|
 | Claude Opus 4.6 | `anthropic/claude-opus-4-6` |
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
-| Grok-4 | `xai/grok-4` |
+| Grok-4.20 Beta | `xai/grok-4.20-beta` (or `xai/grok-4`) |
 
 **All three must be included in a single submission.**
 
@@ -104,7 +104,7 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
-  -m xai/grok-4 \
+  -m xai/grok-4.20-beta \
   -a opencode \
   -k 4 \
   --job-name vendor-eval \
@@ -150,7 +150,7 @@ This will produce:
 eval_csvs/
   anthropic_claude-opus-4-6.csv
   openai_gpt-5.3-codex.csv
-  xai_grok-4.csv
+  xai_grok-4.20-beta.csv
   summary.txt
   eval_results.zip            <- this is what you submit
 ```
@@ -158,7 +158,7 @@ eval_csvs/
 The terminal will also print a summary like:
 
 ```
-Model : xai/grok-4
+Model : xai/grok-4.20-beta
   Instances : 30
   K (rollouts / instance) : 4
   pass@4    : 46.7%  (14/30)
@@ -180,7 +180,7 @@ Model : xai/grok-4
 |--------|-------------|
 | `instance_id` | Task identifier |
 | `rollout_id` | Unique ID for this specific attempt |
-| `model` | Model string (e.g. `xai/grok-4`) |
+| `model` | Model string (e.g. `xai/grok-4.20-beta`) |
 | `reward` | `1.0` = pass, `0.0` = fail, blank = run error |
 | `error` / `error_message` / `traceback` | Error details if the run crashed |
 | `n_input_tokens` / `n_output_tokens` / `cost_usd` | Token usage and estimated cost |
