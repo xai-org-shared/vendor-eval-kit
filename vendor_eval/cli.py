@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from vendor_eval.collect import collect, compute_summary, write_csvs, write_summary
+from vendor_eval.collect import collect, compute_summary, write_csvs, write_summary, write_summary_json
 
 
 @click.group()
@@ -42,12 +42,15 @@ def collect_cmd(jobs_dir: Path, output_dir: Path | None) -> None:
 
     written = write_csvs(rows_by_model, output_dir)
     summary_path = write_summary(rows_by_model, output_dir)
+    summary_json_path = write_summary_json(rows_by_model, output_dir)
 
     click.echo(f"\nWrote {len(written)} CSV(s) to {output_dir}/")
     for path in written:
         with path.open(newline="", encoding="utf-8") as fh:
             n_rows = sum(1 for _ in csv.reader(fh)) - 1  # subtract header
         click.echo(f"  {path.name}  ({n_rows} rows)")
+    click.echo(f"  {summary_path.name}")
+    click.echo(f"  {summary_json_path.name}")
 
     # Print summary to terminal
     click.echo("")
@@ -60,4 +63,5 @@ def collect_cmd(jobs_dir: Path, output_dir: Path | None) -> None:
         for path in written:
             zf.write(path, arcname=path.name)
         zf.write(summary_path, arcname=summary_path.name)
+        zf.write(summary_json_path, arcname=summary_json_path.name)
     click.echo(f"  → {zip_path}")

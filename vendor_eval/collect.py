@@ -350,9 +350,103 @@ def compute_summary(rows_by_model: dict[str, list[dict]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def compute_summary_dict(rows_by_model: dict[str, list[dict]]) -> dict:
+    """
+    Return the same stats as compute_summary but as a structured dict suitable
+    for JSON serialisation.
+
+    Schema
+    ------
+    {
+        "models": {
+            "<model_name>": {
+                "instances": int,
+                "k": int,
+                "pass_at_k": float,          # fraction [0, 1]
+                "pass_at_k_count": int,
+                "pass_all_at_k": float,
+                "pass_all_at_k_count": int,
+            },
+            ...
+        },
+        "cross_model": {                      # only present when > 1 model
+            "n_models": int,
+            "total_instances": int,
+            "pass_all_at_k": float,
+            "pass_all_at_k_count": int,
+        }
+    }
+    """
+    models_out: dict = {}
+    model_pass: dict[str, set[str]] = {}
+    all_instance_ids: set[str] = set()
+
+    for slug, rows in sorted(rows_by_model.items()):
+        by_instance: dict[str, list[float | None]] = {}
+        for row in rows:
+            iid = row["instance_id"]
+            reward = row.get("reward")
+            by_instance.setdefault(iid, []).append(float(reward) if reward is not None else None)
+
+        all_instance_ids.update(by_instance.keys())
+        n_instances = len(by_instance)
+        k = max((len(v) for v in by_instance.values()), default=1)
+
+        pass_k_count = 0
+        pass_all_k_count = 0
+        passing_instances: set[str] = set()
+
+        for iid, rewards in by_instance.items():
+            valid = [r for r in rewards if r is not None]
+            if not valid:
+                continue
+            if max(valid) == 1.0:
+                pass_k_count += 1
+                passing_instances.add(iid)
+            if min(valid) == 1.0:
+                pass_all_k_count += 1
+
+        model_pass[slug] = passing_instances
+        model_name = rows[0].get("model") or slug
+
+        models_out[model_name] = {
+            "instances": n_instances,
+            "k": k,
+            "pass_at_k": round(pass_k_count / n_instances, 6) if n_instances else 0.0,
+            "pass_at_k_count": pass_k_count,
+            "pass_all_at_k": round(pass_all_k_count / n_instances, 6) if n_instances else 0.0,
+            "pass_all_at_k_count": pass_all_k_count,
+        }
+
+    result: dict = {"models": models_out}
+
+    if len(model_pass) > 1 and all_instance_ids:
+        cross_pass = all_instance_ids.copy()
+        for passing in model_pass.values():
+            cross_pass &= passing
+        n_total = len(all_instance_ids)
+        n_cross = len(cross_pass)
+        result["cross_model"] = {
+            "n_models": len(model_pass),
+            "total_instances": n_total,
+            "pass_all_at_k": round(n_cross / n_total, 6) if n_total else 0.0,
+            "pass_all_at_k_count": n_cross,
+        }
+
+    return result
+
+
 def write_summary(rows_by_model: dict[str, list[dict]], output_dir: Path) -> Path:
     """Write summary.txt into *output_dir* and return its path."""
     summary = compute_summary(rows_by_model)
     out_path = output_dir / "summary.txt"
     out_path.write_text(summary, encoding="utf-8")
+    return out_path
+
+
+def write_summary_json(rows_by_model: dict[str, list[dict]], output_dir: Path) -> Path:
+    """Write summary.json into *output_dir* and return its path."""
+    data = compute_summary_dict(rows_by_model)
+    out_path = output_dir / "summary.json"
+    out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return out_path
