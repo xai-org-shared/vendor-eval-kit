@@ -14,7 +14,7 @@ The three models to evaluate are:
 |-------|---------------|
 | Claude Opus 4.6 | `anthropic/claude-opus-4-6` |
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
-| Grok-4.20 Beta | `xai/grok-4.20-beta` (or `xai/grok-4`) |
+| Grok Code Fast 1 | `xai/grok-code-fast-1` |
 
 **All three must be included in a single submission.**
 
@@ -104,7 +104,7 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
-  -m xai/grok-4.20-beta \
+  -m xai/grok-code-fast-1 \
   -a opencode \
   -k 4 \
   --job-name vendor-eval \
@@ -150,7 +150,7 @@ This will produce:
 eval_csvs/
   anthropic_claude-opus-4-6.csv
   openai_gpt-5.3-codex.csv
-  xai_grok-4.20-beta.csv
+  xai_grok-code-fast-1.csv
   summary.txt
   eval_results.zip            <- this is what you submit
 ```
@@ -158,7 +158,7 @@ eval_csvs/
 The terminal will also print a summary like:
 
 ```
-Model : xai/grok-4.20-beta
+Model : xai/grok-code-fast-1
   Instances : 30
   K (rollouts / instance) : 4
   pass@4    : 46.7%  (14/30)
@@ -180,7 +180,7 @@ Model : xai/grok-4.20-beta
 |--------|-------------|
 | `instance_id` | Task identifier |
 | `rollout_id` | Unique ID for this specific attempt |
-| `model` | Model string (e.g. `xai/grok-4.20-beta`) |
+| `model` | Model string (e.g. `xai/grok-code-fast-1`) |
 | `reward` | `1.0` = pass, `0.0` = fail, blank = run error |
 | `error` / `error_message` / `traceback` | Error details if the run crashed |
 | `n_input_tokens` / `n_output_tokens` / `cost_usd` | Token usage and estimated cost |
