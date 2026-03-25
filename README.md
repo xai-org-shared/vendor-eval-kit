@@ -120,6 +120,7 @@ harbor run \
 ```
 
 (You can substitute the grok model with `grok-4` or if there's any issues you can use `grok-code-fast-1` although the first two are recommended)
+(Also, you can substitute terminus-2 with other agents as well, just make sure that they support trajectories output in ATIF format)
 
 If you are calling providers directly (without OpenRouter), use the provider-native model identifiers instead:
 
