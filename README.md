@@ -16,7 +16,10 @@ The three models to evaluate are:
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
 | Grok 4.20-beta | `xai/grok-4.20-beta` |
 
-Note: other preferred options for grok are also `grok-4`. If you run into any issues with either of them, you can use `grok-code-fast-1` as well.
+
+Agent harnesses to use: You can use an agent which is optimised for your use case (eg terminus-2 for terminal bench style tasks or openhands for more involved coding tasks), just make sure you are able to see traces & rewards when you collect the evals.
+
+Note: other preferred options for grok are also `grok-4`. If you run into any issues with either of them, you can use `grok-code-fast-1` as a fallback but the first two are preferred.
 
 **All three must be included in a single submission.**
 
