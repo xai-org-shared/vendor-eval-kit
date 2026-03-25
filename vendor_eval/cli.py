@@ -31,8 +31,24 @@ def cli() -> None:
     default=None,
     help="Directory to write output into (default: <jobs_dir>/vendor-eval-output).",
 )
-def collect_cmd(jobs_dir: Path, output_dir: Path | None) -> None:
+@click.option(
+    "-t",
+    "--pass-threshold",
+    type=float,
+    default=1.0,
+    show_default=True,
+    help=(
+        "Minimum reward to count a rollout as passing. "
+        "Use 1.0 (default) for binary pass/fail tasks. "
+        "Set lower (e.g. 0.5) for tasks with continuous / partial-credit rewards."
+    ),
+)
+def collect_cmd(jobs_dir: Path, output_dir: Path | None, pass_threshold: float) -> None:
     """Collect Harbor trial results under JOBS_DIR and write one CSV per model + summary."""
+    if not 0.0 <= pass_threshold <= 1.0:
+        click.echo("Error: --pass-threshold must be between 0.0 and 1.0.", err=True)
+        raise SystemExit(1)
+
     if output_dir is None:
         output_dir = jobs_dir / "vendor-eval-output"
 
@@ -44,8 +60,8 @@ def collect_cmd(jobs_dir: Path, output_dir: Path | None) -> None:
         raise SystemExit(1)
 
     written = write_csvs(rows_by_model, output_dir)
-    summary_path = write_summary(rows_by_model, output_dir)
-    summary_json_path = write_summary_json(rows_by_model, output_dir)
+    summary_path = write_summary(rows_by_model, output_dir, pass_threshold=pass_threshold)
+    summary_json_path = write_summary_json(rows_by_model, output_dir, pass_threshold=pass_threshold)
 
     click.echo(f"\nWrote {len(written)} CSV(s) to {output_dir}/")
     for path in written:
@@ -57,7 +73,7 @@ def collect_cmd(jobs_dir: Path, output_dir: Path | None) -> None:
 
     # Print summary to terminal
     click.echo("")
-    click.echo(compute_summary(rows_by_model))
+    click.echo(compute_summary(rows_by_model, pass_threshold=pass_threshold))
 
     # Create zip named after the jobs_dir containing CSVs + summary
     zip_name = jobs_dir.resolve().name + ".zip"

@@ -188,8 +188,10 @@ The terminal will also print a summary like:
 Model : xai/grok-code-fast-1
   Instances : 30
   K (rollouts / instance) : 4
-  pass@4    : 46.7%  (14/30)
-  passAll@4 : 33.3%  (10/30)
+  pass@4            : 46.7%  (14/30)
+  passAll@4         : 33.3%  (10/30)
+  avg_reward          : 0.5820
+  avg_best_reward@4 : 0.7130
 ...
 ```
 
@@ -197,9 +199,13 @@ Model : xai/grok-code-fast-1
 
 | Metric | Meaning |
 |--------|---------|
-| `pass@K` | % of tasks where at least 1 of K attempts passed |
-| `passAll@K` | % of tasks where all K attempts passed |
+| `pass@K` | % of tasks where at least 1 of K attempts passed (reward = 1.0) |
+| `passAll@K` | % of tasks where all K attempts passed (reward = 1.0) |
+| `avg_reward` | Mean reward across all valid rollouts |
+| `avg_best_reward@K` | Mean of the per-instance best reward across K rollouts |
 | `passAll@K (all models)` | % of tasks where every model has at least one passing attempt |
+
+> **Note:** `pass@K` and `passAll@K` use binary pass/fail by default (reward = 1.0). For tasks with continuous rewards (0–1), `avg_reward` and `avg_best_reward@K` are the better indicators of model quality. You can also override the pass/fail cutoff with `--pass-threshold` (e.g. `--pass-threshold 0.5`).
 
 **CSV columns:**
 
@@ -208,7 +214,7 @@ Model : xai/grok-code-fast-1
 | `instance_id` | Task identifier |
 | `rollout_id` | Unique ID for this specific attempt |
 | `model` | Model string (e.g. `xai/grok-code-fast-1`) |
-| `reward` | `1.0` = pass, `0.0` = fail, blank = run error |
+| `reward` | Float between 0 and 1 (1.0 = full pass, 0.0 = fail, fractional = partial credit, blank = run error) |
 | `error` / `error_message` / `traceback` | Error details if the run crashed |
 | `n_input_tokens` / `n_output_tokens` / `cost_usd` | Token usage and estimated cost |
 | `n_steps` | Number of agent steps taken |

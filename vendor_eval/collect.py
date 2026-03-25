@@ -265,18 +265,37 @@ def write_csvs(rows_by_model: dict[str, list[dict]], output_dir: Path) -> list[P
 # ---------------------------------------------------------------------------
 
 
-def compute_summary(rows_by_model: dict[str, list[dict]]) -> str:
+def compute_summary(
+    rows_by_model: dict[str, list[dict]],
+    pass_threshold: float = 1.0,
+) -> str:
     """
-    Compute pass@K and passAll@K for each model, plus a cross-model passAll@K.
+    Compute pass@K, passAll@K, and continuous reward metrics for each model,
+    plus a cross-model passAll@K.
+
+    Parameters
+    ----------
+    pass_threshold : float
+        Minimum reward value to count a rollout as "passing" (default 1.0).
+        Use a value < 1.0 for tasks with continuous / partial-credit rewards.
 
     Definitions
     -----------
-    pass@K      : fraction of instances where AT LEAST ONE of K rollouts has reward = 1
-    passAll@K   : fraction of instances where ALL K rollouts have reward = 1
-    passAll@K (all models) : fraction of instances where every model's pass@K = 1
-                             (i.e. at least one rollout passes for every model)
+    pass@K            : fraction of instances where AT LEAST ONE of K rollouts
+                        has reward >= pass_threshold
+    passAll@K         : fraction of instances where ALL K rollouts have
+                        reward >= pass_threshold
+    avg_reward        : mean reward across all valid rollouts
+    avg_best_reward@K : mean of the per-instance best reward across K rollouts
+    passAll@K (all models) : fraction of instances where every model's
+                             pass@K = 1 (i.e. at least one rollout passes for
+                             every model)
     """
     lines: list[str] = ["=" * 60, "vendor-eval summary", "=" * 60, ""]
+
+    if pass_threshold != 1.0:
+        lines.append(f"  pass threshold : {pass_threshold}")
+        lines.append("")
 
     # Per-model stats
     model_pass: dict[str, set[str]] = {}  # slug → set of instance_ids that pass@K
@@ -301,21 +320,27 @@ def compute_summary(rows_by_model: dict[str, list[dict]]) -> str:
         pass_k_count = 0
         pass_all_k_count = 0
         passing_instances: set[str] = set()
+        all_valid_rewards: list[float] = []
+        best_per_instance: list[float] = []
 
         for iid, rewards in by_instance.items():
             valid = [r for r in rewards if r is not None]
             if not valid:
                 continue
-            if max(valid) == 1.0:
+            all_valid_rewards.extend(valid)
+            best_per_instance.append(max(valid))
+            if max(valid) >= pass_threshold:
                 pass_k_count += 1
                 passing_instances.add(iid)
-            if min(valid) == 1.0:
+            if min(valid) >= pass_threshold:
                 pass_all_k_count += 1
 
         model_pass[slug] = passing_instances
 
         pass_k_pct = 100 * pass_k_count / n_instances if n_instances else 0.0
         pass_all_k_pct = 100 * pass_all_k_count / n_instances if n_instances else 0.0
+        avg_reward = sum(all_valid_rewards) / len(all_valid_rewards) if all_valid_rewards else 0.0
+        avg_best = sum(best_per_instance) / len(best_per_instance) if best_per_instance else 0.0
 
         # Use original model name if available
         model_name = rows[0].get("model") or slug
@@ -324,8 +349,10 @@ def compute_summary(rows_by_model: dict[str, list[dict]]) -> str:
             f"Model : {model_name}",
             f"  Instances : {n_instances}",
             f"  K (rollouts / instance) : {k}",
-            f"  pass@{k}    : {pass_k_pct:.1f}%  ({pass_k_count}/{n_instances})",
-            f"  passAll@{k} : {pass_all_k_pct:.1f}%  ({pass_all_k_count}/{n_instances})",
+            f"  pass@{k}            : {pass_k_pct:.1f}%  ({pass_k_count}/{n_instances})",
+            f"  passAll@{k}         : {pass_all_k_pct:.1f}%  ({pass_all_k_count}/{n_instances})",
+            f"  avg_reward          : {avg_reward:.4f}",
+            f"  avg_best_reward@{k} : {avg_best:.4f}",
             "",
         ]
 
@@ -350,26 +377,37 @@ def compute_summary(rows_by_model: dict[str, list[dict]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def compute_summary_dict(rows_by_model: dict[str, list[dict]]) -> dict:
+def compute_summary_dict(
+    rows_by_model: dict[str, list[dict]],
+    pass_threshold: float = 1.0,
+) -> dict:
     """
     Return the same stats as compute_summary but as a structured dict suitable
     for JSON serialisation.
 
+    Parameters
+    ----------
+    pass_threshold : float
+        Minimum reward value to count a rollout as "passing" (default 1.0).
+
     Schema
     ------
     {
+        "pass_threshold": float,
         "models": {
             "<model_name>": {
                 "instances": int,
                 "k": int,
-                "pass_at_k": float,          # fraction [0, 1]
+                "pass_at_k": float,              # fraction [0, 1]
                 "pass_at_k_count": int,
                 "pass_all_at_k": float,
                 "pass_all_at_k_count": int,
+                "avg_reward": float,              # mean of all valid rollout rewards
+                "avg_best_reward_at_k": float,    # mean of per-instance best reward
             },
             ...
         },
-        "cross_model": {                      # only present when > 1 model
+        "cross_model": {                          # only present when > 1 model
             "n_models": int,
             "total_instances": int,
             "pass_all_at_k": float,
@@ -395,19 +433,26 @@ def compute_summary_dict(rows_by_model: dict[str, list[dict]]) -> dict:
         pass_k_count = 0
         pass_all_k_count = 0
         passing_instances: set[str] = set()
+        all_valid_rewards: list[float] = []
+        best_per_instance: list[float] = []
 
         for iid, rewards in by_instance.items():
             valid = [r for r in rewards if r is not None]
             if not valid:
                 continue
-            if max(valid) == 1.0:
+            all_valid_rewards.extend(valid)
+            best_per_instance.append(max(valid))
+            if max(valid) >= pass_threshold:
                 pass_k_count += 1
                 passing_instances.add(iid)
-            if min(valid) == 1.0:
+            if min(valid) >= pass_threshold:
                 pass_all_k_count += 1
 
         model_pass[slug] = passing_instances
         model_name = rows[0].get("model") or slug
+
+        avg_reward = sum(all_valid_rewards) / len(all_valid_rewards) if all_valid_rewards else 0.0
+        avg_best = sum(best_per_instance) / len(best_per_instance) if best_per_instance else 0.0
 
         models_out[model_name] = {
             "instances": n_instances,
@@ -416,9 +461,11 @@ def compute_summary_dict(rows_by_model: dict[str, list[dict]]) -> dict:
             "pass_at_k_count": pass_k_count,
             "pass_all_at_k": round(pass_all_k_count / n_instances, 6) if n_instances else 0.0,
             "pass_all_at_k_count": pass_all_k_count,
+            "avg_reward": round(avg_reward, 6),
+            "avg_best_reward_at_k": round(avg_best, 6),
         }
 
-    result: dict = {"models": models_out}
+    result: dict = {"pass_threshold": pass_threshold, "models": models_out}
 
     if len(model_pass) > 1 and all_instance_ids:
         cross_pass = all_instance_ids.copy()
@@ -436,17 +483,25 @@ def compute_summary_dict(rows_by_model: dict[str, list[dict]]) -> dict:
     return result
 
 
-def write_summary(rows_by_model: dict[str, list[dict]], output_dir: Path) -> Path:
+def write_summary(
+    rows_by_model: dict[str, list[dict]],
+    output_dir: Path,
+    pass_threshold: float = 1.0,
+) -> Path:
     """Write summary.txt into *output_dir* and return its path."""
-    summary = compute_summary(rows_by_model)
+    summary = compute_summary(rows_by_model, pass_threshold=pass_threshold)
     out_path = output_dir / "summary.txt"
     out_path.write_text(summary, encoding="utf-8")
     return out_path
 
 
-def write_summary_json(rows_by_model: dict[str, list[dict]], output_dir: Path) -> Path:
+def write_summary_json(
+    rows_by_model: dict[str, list[dict]],
+    output_dir: Path,
+    pass_threshold: float = 1.0,
+) -> Path:
     """Write summary.json into *output_dir* and return its path."""
-    data = compute_summary_dict(rows_by_model)
+    data = compute_summary_dict(rows_by_model, pass_threshold=pass_threshold)
     out_path = output_dir / "summary.json"
     out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return out_path
