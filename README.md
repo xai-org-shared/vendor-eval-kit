@@ -77,7 +77,7 @@ These keys are used by Harbor to call the respective model APIs. Ensure all thre
 
 ---
 
-## Step 1 — Make sure you have the sample task dataset you wish to submi
+## Step 1 — Make sure you have the sample task dataset you wish to submit
 
 Your task format would look something like this:
 
