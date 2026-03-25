@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import csv
+import sys
 import zipfile
 from pathlib import Path
+
+csv.field_size_limit(sys.maxsize)
 
 import click
 

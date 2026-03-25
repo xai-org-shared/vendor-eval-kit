@@ -65,7 +65,13 @@ pip install git+https://github.com/xai-org-shared/vendor-eval-kit.git
 
 ### 4. API keys
 
-You will need all three of the following keys exported in your shell before running the evaluation:
+The simplest setup is to use a single [OpenRouter](https://openrouter.ai/) key, which lets Harbor route calls to all three models:
+
+```bash
+export OPENROUTER_API_KEY="sk-or-..."
+```
+
+If you prefer not to go through OpenRouter, you can call each provider directly by setting their individual API keys instead:
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
@@ -73,7 +79,7 @@ export OPENAI_API_KEY="sk-..."
 export XAI_API_KEY="xai-..."
 ```
 
-These keys are used by Harbor to call the respective model APIs. Ensure all three are set — the run will fail for any model whose key is missing.
+Ensure the keys for whichever approach you choose are set — the run will fail for any model whose key is missing.
 
 ---
 
@@ -102,11 +108,25 @@ Run the following command from any working directory. Replace `/path/to/coding-e
 ```bash
 harbor run \
   -p /path/to/coding-eval-tasks \
+  -m openrouter/x-ai/grok-4.20-beta \
+  -m openrouter/openai/gpt-5.3-codex \
+  -m openrouter/anthropic/claude-opus-4.6 \
+  -a terminus-2 \
+  -k 8 \
+  --job-name vendor-eval \
+  --jobs-dir eval_results
+```
+
+If you are calling providers directly (without OpenRouter), use the provider-native model identifiers instead:
+
+```bash
+harbor run \
+  -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
   -m xai/grok-code-fast-1 \
-  -a opencode \
-  -k 4 \
+  -a terminus-2 \
+  -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
 ```
@@ -117,8 +137,8 @@ harbor run \
 |------|-------------|
 | `-p <path>` | Path to the task dataset directory |
 | `-m <model>` | Model to evaluate — all three must be included |
-| `-a opencode` | The coding agent to use — do not change this |
-| `-k 4` | Number of independent attempts per task — do not change this |
+| `-a terminus-2` | You can use `terminus-2` as the coding agent harness, but feel free to use a different one — this is flexible |
+| `-k 8` | Number of independent attempts per task — 8 is highly recommended, otherwise 4 if not possible |
 | `--job-name vendor-eval` | Name for this run — do not change this |
 | `--jobs-dir eval_results` | Directory where results are written |
 
@@ -208,7 +228,7 @@ If you encounter any issues during setup or execution, contact your xAI evaluati
 [Harbor](https://github.com/harbor-framework/harbor) is an open evaluation framework built for reproducible LLM agent evals. For each task it:
 
 - Builds an isolated Docker environment from the task's `Dockerfile`
-- Installs the specified agent (`opencode`) and runs it against the task
+- Installs the specified agent (`terminus-2`) and runs it against the task
 - Runs a verifier to score the output (pass / fail)
 - Records a full **ATIF trajectory** — every tool call, observation, and token count
 
