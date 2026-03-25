@@ -143,7 +143,7 @@ Also: please try with k as 1 on a single task and make sure you can see rewards/
 |------|-------------|
 | `-p <path>` | Path to the task dataset directory |
 | `-m <model>` | Model to evaluate — all three must be included |
-| `-a terminus-2` | You can use `terminus-2` as the coding agent harness, but feel free to use a different one — this is flexible |
+| `-a terminus-2` | You can use `terminus-2` as the coding agent harness, but feel free to use a different one — this is flexible. eg openhands or opencode |
 | `-k 8` | Number of independent attempts per task — 8 is highly recommended, otherwise 4 if not possible |
 | `--job-name vendor-eval` | Name for this run — do not change this |
 | `--jobs-dir eval_results` | Directory where results are written |
