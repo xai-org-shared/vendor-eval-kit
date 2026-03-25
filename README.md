@@ -14,7 +14,9 @@ The three models to evaluate are:
 |-------|---------------|
 | Claude Opus 4.6 | `anthropic/claude-opus-4-6` |
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
-| Grok Code Fast 1 | `xai/grok-code-fast-1` |
+| Grok 4.20-beta | `xai/grok-4.20-beta` |
+
+Note: other preferred options for grok are also `grok-4`. If you run into any issues with either of them, you can use `grok-code-fast-1` as well.
 
 **All three must be included in a single submission.**
 
@@ -117,6 +119,8 @@ harbor run \
   --jobs-dir eval_results
 ```
 
+(You can substitute the grok model with `grok-4` or if there's any issues you can use `grok-code-fast-1` although the first two are recommended)
+
 If you are calling providers directly (without OpenRouter), use the provider-native model identifiers instead:
 
 ```bash
@@ -124,12 +128,14 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
-  -m xai/grok-code-fast-1 \
+  -m xai/grok-4 \
   -a terminus-2 \
   -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
 ```
+
+Also: please try with k as 1 on a single task and make sure you can see rewards/traces before running it for the full dataset since it'll take some time.
 
 **What each flag does:**
 
