@@ -14,7 +14,9 @@ The three models to evaluate are:
 |-------|---------------|
 | Claude Opus 4.6 | `anthropic/claude-opus-4-6` |
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
-| Grok Build | `openai/grok-build-best-0325` (custom endpoint — see below) |
+| Grok Build | `openai/grok-build-latest` (custom endpoint — see below) |
+
+Note: if `grok-build-latest` doesn't work, please let us know or try `grok-build-best-0328` or `grok-build-best-0325`
 
 
 Agent harnesses to use: You can use an agent which is optimised for your use case (eg terminus-2 for terminal bench style tasks or openhands for more involved coding tasks), just make sure you are able to see traces & rewards when you collect the evals.
@@ -30,7 +32,7 @@ OPENAI_API_KEY=<your-xai-api-key> \
 harbor run \
   -p /path/to/coding-eval-tasks \
   -a terminus-2 \
-  -m openai/grok-build-best-0325 \
+  -m openai/grok-build-latest \
   --agent-kwarg api_base=https://api.x.ai/v1 \
   -k 8 \
   --job-name vendor-eval \
@@ -44,7 +46,7 @@ OPENAI_API_KEY=<your-xai-api-key> \
 harbor run \
   -p /path/to/coding-eval-tasks \
   -a openhands \
-  -m openai/grok-build-best-0325 \
+  -m openai/grok-build-latest \
   --agent-kwarg api_base=https://api.x.ai/v1 \
   --agent-kwarg drop_params=true \
   -k 8 \
@@ -194,7 +196,7 @@ OPENAI_API_KEY=<your-xai-api-key> \
 harbor run \
   -p /path/to/coding-eval-tasks \
   -a terminus-2 \
-  -m openai/grok-build-best-0325 \
+  -m openai/grok-build-latest \
   --agent-kwarg api_base=https://api.x.ai/v1 \
   -k 8 \
   --job-name vendor-eval \
@@ -242,7 +244,7 @@ This will produce:
 eval_csvs/
   anthropic_claude-opus-4-6.csv
   openai_gpt-5.3-codex.csv
-  openai_grok-build-best-0325.csv
+  openai_grok-build-latest.csv
   summary.txt
   eval_results.zip            <- this is what you submit
 ```
@@ -250,7 +252,7 @@ eval_csvs/
 The terminal will also print a summary like:
 
 ```
-Model : openai/grok-build-best-0325
+Model : openai/grok-build-latest
   Instances : 30
   K (rollouts / instance) : 4
   pass@4            : 46.7%  (14/30)
@@ -278,7 +280,7 @@ Model : openai/grok-build-best-0325
 |--------|-------------|
 | `instance_id` | Task identifier |
 | `rollout_id` | Unique ID for this specific attempt |
-| `model` | Model string (e.g. `openai/grok-build-best-0325`) |
+| `model` | Model string (e.g. `openai/grok-build-latest`) |
 | `reward` | Float between 0 and 1 (1.0 = full pass, 0.0 = fail, fractional = partial credit, blank = run error) |
 | `error` / `error_message` / `traceback` | Error details if the run crashed |
 | `n_input_tokens` / `n_output_tokens` / `cost_usd` | Token usage and estimated cost |
