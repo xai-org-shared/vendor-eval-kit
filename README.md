@@ -23,7 +23,7 @@ Agent harnesses to use: You can use an agent which is optimised for your use cas
 
 ### Running with Grok Build
 
-Grok Build is an xAI model served via an OpenAI-compatible endpoint at `https://api.x.ai/v1`. It is not in LiteLLM's model registry, so it requires a custom `api_base` configuration. To get an API key, request one in the Slack channel and tag **@Vistaar Juneja**.
+Grok Build is an xAI model served via an OpenAI-compatible endpoint at `https://api.x.ai/v1`. It is not in LiteLLM's model registry, so it requires a custom `api_base` configuration. To get an API key, request one in the Slack channel and tag **@Vistaar Juneja** - also mention the email you want to give access to.
 
 #### With terminus-2
 
