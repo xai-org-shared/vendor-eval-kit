@@ -14,12 +14,60 @@ The three models to evaluate are:
 |-------|---------------|
 | Claude Opus 4.6 | `anthropic/claude-opus-4-6` |
 | GPT-5.3 Codex | `openai/gpt-5.3-codex` |
-| Grok 4.20-beta | `xai/grok-4.20-beta` |
+| Grok Build | `openai/grok-build-best-0325` (custom endpoint — see below) |
 
 
 Agent harnesses to use: You can use an agent which is optimised for your use case (eg terminus-2 for terminal bench style tasks or openhands for more involved coding tasks), just make sure you are able to see traces & rewards when you collect the evals.
 
-Note: other preferred options for grok are also `grok-4`. If you run into any issues with either of them, you can use `grok-code-fast-1` as a fallback but the first two are preferred.
+### Running with Grok Build
+
+Grok Build is an xAI model served via an OpenAI-compatible endpoint at `https://api.x.ai/v1`. It is not in LiteLLM's model registry, so it requires a custom `api_base` configuration. To get an API key, request one in the Slack channel and tag **@Vistaar Juneja**.
+
+#### With terminus-2
+
+```bash
+OPENAI_API_KEY=<your-xai-api-key> \
+harbor run \
+  -p /path/to/coding-eval-tasks \
+  -a terminus-2 \
+  -m openai/grok-build-best-0325 \
+  --agent-kwarg api_base=https://api.x.ai/v1 \
+  -k 8 \
+  --job-name vendor-eval \
+  --jobs-dir eval_results
+```
+
+#### With openhands
+
+```bash
+OPENAI_API_KEY=<your-xai-api-key> \
+harbor run \
+  -p /path/to/coding-eval-tasks \
+  -a openhands \
+  -m openai/grok-build-best-0325 \
+  --agent-kwarg api_base=https://api.x.ai/v1 \
+  --agent-kwarg drop_params=true \
+  -k 8 \
+  --job-name vendor-eval \
+  --jobs-dir eval_results
+```
+
+You can do something similar for other agent harnesses
+
+**How it works:**
+
+| Setting | What | Why |
+|---------|------|-----|
+| `OPENAI_API_KEY` | Set to your xAI API key | LiteLLM uses this env var for `openai/` prefixed models |
+| `openai/` prefix | Tells LiteLLM to use the OpenAI-compatible client | The xAI endpoint speaks the OpenAI chat completions protocol |
+| `api_base` | Points to `https://api.x.ai/v1` | Overrides the default OpenAI base URL |
+| `drop_params=true` | (openhands only) Tells LiteLLM to drop unsupported params | Prevents errors for params not in the model registry |
+
+**Notes:**
+- No changes to the Harbor codebase are required.
+- The `openai/` prefix + `api_base` override is the standard LiteLLM pattern for any OpenAI-compatible endpoint with an unlisted model.
+- You will see a harmless warning: `"This model isn't mapped yet"` — this just means LiteLLM uses a fallback context limit of 1M tokens, which is fine.
+
 
 **All three must be included in a single submission.**
 
@@ -70,7 +118,7 @@ pip install git+https://github.com/xai-org-shared/vendor-eval-kit.git
 
 ### 4. API keys
 
-The simplest setup is to use a single [OpenRouter](https://openrouter.ai/) key, which lets Harbor route calls to all three models:
+The simplest setup is to use a single [OpenRouter](https://openrouter.ai/) key, which lets Harbor route calls to anthropic/openai models
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-..."
@@ -81,8 +129,9 @@ If you prefer not to go through OpenRouter, you can call each provider directly 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
 export OPENAI_API_KEY="sk-..."
-export XAI_API_KEY="xai-..."
 ```
+
+For **Grok Build**, set `OPENAI_API_KEY` to your xAI API key when running the Grok Build commands (see "Running with Grok Build" section). Request the key in the Slack channel and tag **@Vistaar Juneja**.
 
 Ensure the keys for whichever approach you choose are set — the run will fail for any model whose key is missing.
 
@@ -113,7 +162,6 @@ Run the following command from any working directory. Replace `/path/to/coding-e
 ```bash
 harbor run \
   -p /path/to/coding-eval-tasks \
-  -m openrouter/x-ai/grok-4.20-beta \
   -m openrouter/openai/gpt-5.3-codex \
   -m openrouter/anthropic/claude-opus-4.6 \
   -a terminus-2 \
@@ -122,8 +170,7 @@ harbor run \
   --jobs-dir eval_results
 ```
 
-(You can substitute the grok model with `grok-4` or if there's any issues you can use `grok-code-fast-1` although the first two are recommended)
-(Also, you can substitute terminus-2 with other agents as well, just make sure that they support trajectories output in ATIF format)
+(You can substitute terminus-2 with other agents as well, just make sure that they support trajectories output in ATIF format)
 
 If you are calling providers directly (without OpenRouter), use the provider-native model identifiers instead:
 
@@ -132,8 +179,23 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
-  -m xai/grok-4 \
   -a terminus-2 \
+  -k 8 \
+  --job-name vendor-eval \
+  --jobs-dir eval_results
+```
+
+**Note:** Grok Build must be run separately using the commands in the "Running with Grok Build" section above, since it requires a custom `api_base` and `OPENAI_API_KEY`.
+
+eg
+
+```bash
+OPENAI_API_KEY=<your-xai-api-key> \
+harbor run \
+  -p /path/to/coding-eval-tasks \
+  -a terminus-2 \
+  -m openai/grok-build-best-0325 \
+  --agent-kwarg api_base=https://api.x.ai/v1 \
   -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
@@ -180,7 +242,7 @@ This will produce:
 eval_csvs/
   anthropic_claude-opus-4-6.csv
   openai_gpt-5.3-codex.csv
-  xai_grok-code-fast-1.csv
+  openai_grok-build-best-0325.csv
   summary.txt
   eval_results.zip            <- this is what you submit
 ```
@@ -188,7 +250,7 @@ eval_csvs/
 The terminal will also print a summary like:
 
 ```
-Model : xai/grok-code-fast-1
+Model : openai/grok-build-best-0325
   Instances : 30
   K (rollouts / instance) : 4
   pass@4            : 46.7%  (14/30)
@@ -216,7 +278,7 @@ Model : xai/grok-code-fast-1
 |--------|-------------|
 | `instance_id` | Task identifier |
 | `rollout_id` | Unique ID for this specific attempt |
-| `model` | Model string (e.g. `xai/grok-code-fast-1`) |
+| `model` | Model string (e.g. `openai/grok-build-best-0325`) |
 | `reward` | Float between 0 and 1 (1.0 = full pass, 0.0 = fail, fractional = partial credit, blank = run error) |
 | `error` / `error_message` / `traceback` | Error details if the run crashed |
 | `n_input_tokens` / `n_output_tokens` / `cost_usd` | Token usage and estimated cost |
