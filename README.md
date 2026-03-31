@@ -32,7 +32,7 @@ harbor run \
   -a terminus-2 \
   -m openai/grok-build-best-0325 \
   --agent-kwarg api_base=https://api.x.ai/v1 \
-  -k 4 \
+  -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
 ```
@@ -47,10 +47,12 @@ harbor run \
   -m openai/grok-build-best-0325 \
   --agent-kwarg api_base=https://api.x.ai/v1 \
   --agent-kwarg drop_params=true \
-  -k 4 \
+  -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
 ```
+
+You can do something similar for other agent harnesses
 
 **How it works:**
 
@@ -116,7 +118,7 @@ pip install git+https://github.com/xai-org-shared/vendor-eval-kit.git
 
 ### 4. API keys
 
-The simplest setup is to use a single [OpenRouter](https://openrouter.ai/) key, which lets Harbor route calls to all three models:
+The simplest setup is to use a single [OpenRouter](https://openrouter.ai/) key, which lets Harbor route calls to anthropic/openai models
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-..."
@@ -184,6 +186,20 @@ harbor run \
 ```
 
 **Note:** Grok Build must be run separately using the commands in the "Running with Grok Build" section above, since it requires a custom `api_base` and `OPENAI_API_KEY`.
+
+eg
+
+```bash
+OPENAI_API_KEY=<your-xai-api-key> \
+harbor run \
+  -p /path/to/coding-eval-tasks \
+  -a terminus-2 \
+  -m openai/grok-build-best-0325 \
+  --agent-kwarg api_base=https://api.x.ai/v1 \
+  -k 8 \
+  --job-name vendor-eval \
+  --jobs-dir eval_results
+```
 
 Also: please try with k as 1 on a single task and make sure you can see rewards/traces before running it for the full dataset since it'll take some time.
 
