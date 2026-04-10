@@ -25,20 +25,6 @@ Agent harnesses to use: You can use an agent which is optimised for your use cas
 
 Grok Build is an xAI model served via an OpenAI-compatible endpoint at `https://api.x.ai/v1`. It is not in LiteLLM's model registry, so it requires a custom `api_base` configuration. To get an API key, request one in the Slack channel and tag **@Vistaar Juneja** - also mention the email you want to give access to.
 
-#### With terminus-2
-
-```bash
-OPENAI_API_KEY=<your-xai-api-key> \
-harbor run \
-  -p /path/to/coding-eval-tasks \
-  -a terminus-2 \
-  -m openai/grok-build-latest \
-  --agent-kwarg api_base=https://api.x.ai/v1 \
-  -k 8 \
-  --job-name vendor-eval \
-  --jobs-dir eval_results
-```
-
 #### With openhands
 
 ```bash
@@ -166,13 +152,13 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m openrouter/openai/gpt-5.3-codex \
   -m openrouter/anthropic/claude-opus-4.6 \
-  -a terminus-2 \
+  -a openhands \
   -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
 ```
 
-(You can substitute terminus-2 with other agents as well, just make sure that they support trajectories output in ATIF format)
+(You can substitute openhands with other agents as well, just make sure that they support trajectories output in ATIF format)
 
 If you are calling providers directly (without OpenRouter), use the provider-native model identifiers instead:
 
@@ -181,7 +167,7 @@ harbor run \
   -p /path/to/coding-eval-tasks \
   -m anthropic/claude-opus-4-6 \
   -m openai/gpt-5.3-codex \
-  -a terminus-2 \
+  -a openhands \
   -k 8 \
   --job-name vendor-eval \
   --jobs-dir eval_results
@@ -195,7 +181,7 @@ eg
 OPENAI_API_KEY=<your-xai-api-key> \
 harbor run \
   -p /path/to/coding-eval-tasks \
-  -a terminus-2 \
+  -a openhands \
   -m openai/grok-build-latest \
   --agent-kwarg api_base=https://api.x.ai/v1 \
   -k 8 \
@@ -211,7 +197,7 @@ Also: please try with k as 1 on a single task and make sure you can see rewards/
 |------|-------------|
 | `-p <path>` | Path to the task dataset directory |
 | `-m <model>` | Model to evaluate — all three must be included |
-| `-a terminus-2` | You can use `terminus-2` as the coding agent harness, but feel free to use a different one — this is flexible. eg openhands or opencode |
+| `-a openhands` | You can use `openhands` as the coding agent harness, but feel free to use a different one — this is flexible. eg openhands or opencode |
 | `-k 8` | Number of independent attempts per task — 8 is highly recommended, otherwise 4 if not possible |
 | `--job-name vendor-eval` | Name for this run — do not change this |
 | `--jobs-dir eval_results` | Directory where results are written |
@@ -308,8 +294,10 @@ If you encounter any issues during setup or execution, contact your xAI evaluati
 [Harbor](https://github.com/harbor-framework/harbor) is an open evaluation framework built for reproducible LLM agent evals. For each task it:
 
 - Builds an isolated Docker environment from the task's `Dockerfile`
-- Installs the specified agent (`terminus-2`) and runs it against the task
+- Installs the specified agent (`openhands`) and runs it against the task
 - Runs a verifier to score the output (pass / fail)
 - Records a full **ATIF trajectory** — every tool call, observation, and token count
+
+Note: we've seen some issues with terminus-2 on the latest grok build models that we're looking to fix, so openhands might be a better fit for the harness.
 
 Full documentation: https://harborframework.com/docs
