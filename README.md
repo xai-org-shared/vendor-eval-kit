@@ -163,6 +163,15 @@ coding-eval-tasks/
 
 Note the full path to this directory — you will need it in the next step.
 
+Note: if you are submitting SWE or code related tasks, tweak the format above a little bit as shown below. Also, make sure that your image or the Dockerfile has git installed and is a proper repo so that `git diff` works inside it.
+Format is so that the `solve.sh` applies a `solution.patch` script (which is in the diff format) and then runs tests.
+
+```
+solution/
+  solve.sh
+  solution.patch
+```
+
 ---
 
 ## Step 2 — Run the evaluation
