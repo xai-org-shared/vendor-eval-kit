@@ -19,7 +19,27 @@ The three models to evaluate are:
 Note: if `grok-build-latest` doesn't work, please let us know or try `grok-build-best-0328` or `grok-build-best-0325`
 
 
-Agent harnesses to use: You can use an agent which is optimised for your use case (eg terminus-2 for terminal bench style tasks or openhands for more involved coding tasks), just make sure you are able to see traces & rewards when you collect the evals.
+Agent harnesses to use:
+
+[UPDATE]: we just released our own internal harness. Working on porting it over to harbor, but for the time being, please use the below for best results:
+
+```
+https://storage.googleapis.com/grok-build-public-artifacts/cli/install.sh
+
+Use your API key with this
+
+[model.grok-build-latest]
+model = "grok-build-latest"
+base_url = "https://api.x.ai"
+env_key = "XAI_API_KEY"
+name = "grok-build-latest"
+
+```bash
+export GROK_MODELS_BASE_URL="https://api.x.ai"
+export GROK_CODE_XAI_API_KEY="xai-..."
+grok
+```
+```
 
 ### Running with Grok Build
 
