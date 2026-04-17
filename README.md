@@ -30,15 +30,15 @@ Use your API key with this
 
 [model.grok-build-latest]
 model = "grok-build-latest"
-base_url = "https://api.x.ai"
+base_url = "https://api.x.ai/v1"
 env_key = "XAI_API_KEY"
 name = "grok-build-latest"
 
-```bash
-export GROK_MODELS_BASE_URL="https://api.x.ai"
+or you can do
+
+export GROK_MODELS_BASE_URL="https://api.x.ai/v1"
 export GROK_CODE_XAI_API_KEY="xai-..."
 grok
-```
 ```
 
 ### Running with Grok Build
