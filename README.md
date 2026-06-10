@@ -21,18 +21,18 @@ Note: if `grok-build-latest` doesn't work, please let us know or try `grok-build
 
 Agent harnesses to use:
 
-[UPDATE]: we just released our own internal harness. Working on porting it over to harbor, but for the time being, please use the below for best results:
+[UPDATE]: We released our own harness. Please use this for best results:
 
 ```
-https://storage.googleapis.com/grok-build-public-artifacts/cli/install.sh
+curl -fsSL https://x.ai/cli/install.sh | bash
 
 Use your API key with this
 
-[model.grok-build-latest]
-model = "grok-build-latest"
+[model.grok-build-0.1]
+model = "grok-build-0.1"
 base_url = "https://api.x.ai/v1"
 env_key = "XAI_API_KEY"
-name = "grok-build-latest"
+name = "grok-build-0.1"
 ```
 
 or you can do
@@ -47,21 +47,6 @@ grok
 
 Grok Build is an xAI model served via an OpenAI-compatible endpoint at `https://api.x.ai/v1`. It is not in LiteLLM's model registry, so it requires a custom `api_base` configuration. To get an API key, request one in the Slack channel and tag **@Vistaar Juneja** - also mention the email you want to give access to.
 
-#### With openhands
-
-```bash
-OPENAI_API_KEY=<your-xai-api-key> \
-harbor run \
-  -p /path/to/coding-eval-tasks \
-  -a openhands \
-  -m openai/grok-build-latest \
-  --agent-kwarg api_base=https://api.x.ai/v1 \
-  --agent-kwarg drop_params=true \
-  -k 8 \
-  --job-name vendor-eval \
-  --jobs-dir eval_results
-```
-
 You can do something similar for other agent harnesses
 
 **How it works:**
@@ -71,7 +56,6 @@ You can do something similar for other agent harnesses
 | `OPENAI_API_KEY` | Set to your xAI API key | LiteLLM uses this env var for `openai/` prefixed models |
 | `openai/` prefix | Tells LiteLLM to use the OpenAI-compatible client | The xAI endpoint speaks the OpenAI chat completions protocol |
 | `api_base` | Points to `https://api.x.ai/v1` | Overrides the default OpenAI base URL |
-| `drop_params=true` | (openhands only) Tells LiteLLM to drop unsupported params | Prevents errors for params not in the model registry |
 
 **Notes:**
 - No changes to the Harbor codebase are required.
