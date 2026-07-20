@@ -1,3 +1,5 @@
+# NOTE: This is deprecated. grok build support has landed on harbor, so please use that for running any kinds of rollouts. Coordinate with the xAI team for API keys and any further asks for submitting samplees.
+
 # Eval kit for vendors selling RL environments to xAI
 
 This guide is meant for vendors interested in selling RL environments to xAI. It walks you through everything you need to run the evaluation and submit your results. Please follow each step carefully — submissions that do not follow this format cannot be processed.
