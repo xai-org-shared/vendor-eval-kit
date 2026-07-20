@@ -11,6 +11,18 @@
 - Runs a verifier to score the output (pass / fail)
 - Records a full **ATIF trajectory** — every tool call, observation, and token count
 
+## Sample command
+
+```
+harbor run -p <envs-dir> -a grok-build \
+  -m xai/v9m-rl-learnability-tp8 \
+  --ak grok_config='{"model":{"v9m-rl-learnability-tp8":{"name":"v9m-rl-learnability-tp8","model":"v9m-rl-learnability-tp8","base_url":"https://api.x.ai/v1","env_key":"XAI_API_KEY","api_backend":"responses","context_window":256000}}}' \
+  -k 8 --env-file .env \
+  --job-name vendor-eval --jobs-dir submission_results
+```
+
+Note: confirm the endpoint with xAI before doing the run
+
 
 <del>
 # Eval kit for vendors selling RL environments to xAI
