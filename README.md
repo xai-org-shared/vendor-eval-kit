@@ -1,5 +1,18 @@
-# NOTE: This is deprecated. grok build support has landed on harbor, so please use that for running any kinds of rollouts. Coordinate with the xAI team for API keys and any further asks for submitting samplees.
+# NOTE: This is deprecated. grok build support has landed on harbor, so please use that for running any kinds of rollouts. Coordinate with the xAI team for API keys and any further asks for submitting samples.
 
+---
+
+## What is Harbor?
+
+[Harbor](https://github.com/harbor-framework/harbor) is an open evaluation framework built for reproducible LLM agent evals. For each task it:
+
+- Builds an isolated Docker environment from the task's `Dockerfile`
+- Installs the specified agent (`openhands`) and runs it against the task
+- Runs a verifier to score the output (pass / fail)
+- Records a full **ATIF trajectory** — every tool call, observation, and token count
+
+
+<del>
 # Eval kit for vendors selling RL environments to xAI
 
 This guide is meant for vendors interested in selling RL environments to xAI. It walks you through everything you need to run the evaluation and submit your results. Please follow each step carefully — submissions that do not follow this format cannot be processed.
@@ -304,17 +317,8 @@ Send the zip file `eval_csvs/eval_results.zip`, along with the zip of samples yo
 
 If you encounter any issues during setup or execution, contact your xAI evaluation contact before submitting incomplete results.
 
----
-
-## What is Harbor?
-
-[Harbor](https://github.com/harbor-framework/harbor) is an open evaluation framework built for reproducible LLM agent evals. For each task it:
-
-- Builds an isolated Docker environment from the task's `Dockerfile`
-- Installs the specified agent (`openhands`) and runs it against the task
-- Runs a verifier to score the output (pass / fail)
-- Records a full **ATIF trajectory** — every tool call, observation, and token count
 
 Note: we've seen some issues with terminus-2 on the latest grok build models that we're looking to fix, so openhands might be a better fit for the harness.
 
 Full documentation: https://harborframework.com/docs
+</del>
