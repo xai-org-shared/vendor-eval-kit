@@ -1,4 +1,4 @@
-# NOTE: This is deprecated. grok build support has landed on harbor, so please use that for running any kinds of rollouts. Coordinate with the xAI team for API keys and any further asks for submitting samples.
+# NOTE: This is deprecated. grok build support has landed on harbor, so please use that for running any kinds of rollouts. Coordinate with the xAI team for API keys and any further asks for submitting samples. A sample command for harbor is given below
 
 ---
 
